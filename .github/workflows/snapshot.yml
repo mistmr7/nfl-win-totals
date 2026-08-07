@@ -28,7 +28,13 @@ jobs:
           git add data/snapshots.csv
           if git diff --staged --quiet; then
             echo "No changes to commit"
-          else
-            git commit -m "Daily snapshot $(date -u +%Y-%m-%d)"
-            git push
+            exit 0
           fi
+          git commit -m "Daily snapshot $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do
+            git pull --rebase origin master && git push && exit 0
+            echo "Push attempt $i failed, retrying..."
+            sleep 5
+          done
+          echo "Push failed after 3 attempts"
+          exit 1
